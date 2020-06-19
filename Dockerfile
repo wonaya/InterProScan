@@ -11,37 +11,35 @@ ENV IPR $IPR
 ARG IPRSCAN=5.41-78.0
 ENV IPRSCAN $IPRSCAN
 
-RUN mkdir -p /opt/interproscan/bin/blast/ncbi-blast-2.9.0+
-RUN mkdir -p /opt/interproscan/bin/interproscan
+RUN mkdir -p /tmp/interproscan/bin/blast/ncbi-blast-2.9.0+
+RUN mkdir -p /tmp/interproscan/bin/interproscan
+
+RUN wget -O /tmp/interproscan-core-$IPRSCAN.tar.gz ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/$IPR/$IPRSCAN/alt/interproscan-core-$IPRSCAN.tar.gz
+RUN wget -O /tmp/interproscan-core-$IPRSCAN.tar.gz.md5 ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/$IPR/$IPRSCAN/alt/interproscan-core-$IPRSCAN.tar.gz.md5
 
 
-RUN wget -O /opt/interproscan-core-$IPRSCAN.tar.gz ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/$IPR/$IPRSCAN/alt/interproscan-core-$IPRSCAN.tar.gz
-RUN wget -O /opt/interproscan-core-$IPRSCAN.tar.gz.md5 ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/$IPR/$IPRSCAN/alt/interproscan-core-$IPRSCAN.tar.gz.md5
-
-
-WORKDIR /opt
+WORKDIR /tmp
 
 RUN md5sum -c interproscan-core-$IPRSCAN.tar.gz.md5
 
 RUN  tar -pxvzf interproscan-core-$IPRSCAN.tar.gz \
-    -C /opt/interproscan --strip-components=1 \
+    -C /tmp/interproscan --strip-components=1 \
     && rm -f interproscan-core-$IPRSCAN.tar.gz interproscan-core-$IPRSCAN.tar.gz.md5
 
 
 # Workaround bin/blast/ncbi-blast-2.9.0+/rpsblast: error while loading shared
 # libraries: libgnutls.so.28: cannot open shared object file: No such file or 
 # directory
-RUN wget -O /opt/ncbi-blast-2.9.0+-x64-linux.tar.gz ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.9.0/ncbi-blast-2.9.0+-x64-linux.tar.gz
+RUN wget -O /tmp/ncbi-blast-2.9.0+-x64-linux.tar.gz ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.9.0/ncbi-blast-2.9.0+-x64-linux.tar.gz
 RUN tar xvf ncbi-blast-2.9.0+-x64-linux.tar.gz
 
 
 # copy the new version to the binary folder
-RUN cp /opt/ncbi-blast-2.9.0+/bin/rpsblast /opt/interproscan/bin/blast/ncbi-blast-2.9.0+/rpsblast
-#RUN cp /opt/interproscan/interproscan.sh /opt/interproscan/interproscan-5.jar /opt/interproscan/bin/interproscan
+RUN cp /tmp/ncbi-blast-2.9.0+/bin/rpsblast /tmp/interproscan/bin/blast/ncbi-blast-2.9.0+/rpsblast
 
 ################## BASE IMAGE ######################
 
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 MAINTAINER Jawon Song <jawon@tacc.utexas.edu>
 LABEL  base_image="ubuntu:16.04" \
@@ -57,31 +55,31 @@ LABEL  base_image="ubuntu:16.04" \
        extra.identifier.biotools="interproscan_5" \
        extra.binaries="interproscan.sh"
 
-COPY --from=buildcore /opt/interproscan /opt/interproscan
+COPY --from=buildcore /tmp/interproscan /tmp/interproscan
 
-RUN mkdir -p /opt/interproscan/data
+RUN mkdir -p /tmp/interproscan/data
 RUN mkdir -p /data
 
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y \
         parallel \
-        openjdk-8-jre   \
         build-essential \
         pkg-config      \
         python3         \
         bzip2           \
 	libdw1 \
+        wget \
 	nano \
+        openjdk-11-jre \
         ca-certificates && \
     apt-get clean && \
     apt-get purge && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 
+WORKDIR /tmp/interproscan
 
-WORKDIR /opt/interproscan
-
-ENV PATH=$PATH:/opt/interproscan/bin
+ENV PATH=$PATH:/tmp/interproscan/bin
 
 ADD splitfasta.pl /usr/bin
 ADD iprs_wrapper.sh /usr/bin
