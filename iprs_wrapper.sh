@@ -180,7 +180,7 @@ sed -i 's/\.//g' inputnostar.fasta
 ##RUN IPRS
 if [ ! -d ./$outdir ]; then mkdir $outdir; fi
 
-parallel -j 100% /opt/interproscan/interproscan.sh -i {} -d $outdir $ARGS ::: ./split/query*
+parallel -j 100% /scratch/projects/tacc/bio/interproscan/interproscan-5.41-78.0/interproscan.sh -i {} -d $outdir $ARGS ::: ./split/query*
 
 
 ##MERGE SPLIT OUTPUTS
