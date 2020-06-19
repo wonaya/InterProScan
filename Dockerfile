@@ -8,7 +8,7 @@ MAINTAINER Jawon Song <jawon@tacc.utexas.edu>
 
 ARG IPR=5
 ENV IPR $IPR
-ARG IPRSCAN=5.41-78.0
+ARG IPRSCAN=5.44-79.0
 ENV IPRSCAN $IPRSCAN
 
 RUN mkdir -p /tmp/interproscan/bin/blast/ncbi-blast-2.9.0+
@@ -44,7 +44,7 @@ FROM ubuntu:18.04
 MAINTAINER Jawon Song <jawon@tacc.utexas.edu>
 LABEL  base_image="ubuntu:16.04" \
        software="interproscan" \
-       software.version="5.41-78.0" \
+       software.version="5.44-79.0" \
        version="1" \
        about.summary="Scan sequences against the InterPro protein signature databases." \
        about.home="https://www.ebi.ac.uk/interpro/interproscan.html" \
